@@ -1,1 +1,85 @@
+import sys
+from PyQt6.QtWidgets import (
+    QApplication, QWidget, QLabel, QPushButton,
+    QVBoxLayout, QHBoxLayout, QListWidget, QLineEdit, QFrame, QTimeEdit
+)
+from PyQt6.QtCore import Qt, QTime
 
+class IngatIn(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("IngatIn")
+        self.setGeometry(100, 100, 400, 350)
+
+        # Frame utama sebagai border
+        self.frame = QFrame()
+        self.frame.setFrameShape(QFrame.Shape.Box)
+        self.frame.setFrameShadow(QFrame.Shadow.Raised)
+
+        # Komponen UI
+        self.label = QLabel("Masukkan Tugas dan Jadwal")
+        self.input = QLineEdit()
+        self.input.setPlaceholderText("Tugas baru...")
+
+        self.time_edit = QTimeEdit()
+        self.time_edit.setDisplayFormat("HH:mm")
+        self.time_edit.setTime(QTime.currentTime())
+
+        self.tambah_btn = QPushButton("Tambah")
+        self.selesai_btn = QPushButton("Selesai")
+        self.hapus_btn = QPushButton("Hapus")
+
+        self.list_tugas = QListWidget()
+
+        # Layout input dan waktu
+        input_layout = QHBoxLayout()
+        input_layout.addWidget(self.input)
+        input_layout.addWidget(self.time_edit)
+
+        # Layout tombol
+        tombol_layout = QHBoxLayout()
+        tombol_layout.addWidget(self.tambah_btn)
+        tombol_layout.addWidget(self.selesai_btn)
+        tombol_layout.addWidget(self.hapus_btn)
+
+        # Layout utama dalam frame
+        layout = QVBoxLayout(self.frame)
+        layout.addWidget(self.label)
+        layout.addLayout(input_layout)
+        layout.addLayout(tombol_layout)
+        layout.addWidget(self.list_tugas)
+
+        # Layout keseluruhan
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.frame)
+        self.setLayout(main_layout)
+
+        # Signal dan Slot
+        self.tambah_btn.clicked.connect(self.tambah_tugas)
+        self.selesai_btn.clicked.connect(self.tandai_selesai)
+        self.hapus_btn.clicked.connect(self.hapus_tugas)
+
+    def tambah_tugas(self):
+        tugas = self.input.text().strip()
+        waktu = self.time_edit.time().toString("HH:mm")
+        if tugas:
+            item_text = f"{waktu} - {tugas}"
+            self.list_tugas.addItem(item_text)
+            self.input.clear()
+
+    def tandai_selesai(self):
+        item = self.list_tugas.currentItem()
+        if item and not item.text().startswith("[✓]"):
+            item.setText(f"[✓] {item.text()}")
+            item.setForeground(Qt.GlobalColor.darkGreen)
+
+    def hapus_tugas(self):
+        row = self.list_tugas.currentRow()
+        if row >= 0:
+            self.list_tugas.takeItem(row)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = IngatIn()
+    window.show()
+    sys.exit(app.exec())
